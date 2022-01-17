@@ -21,5 +21,26 @@ public class TestApp {
         float result = fingerprintSimilarity.getSimilarity();
 
         LOGGER.info(String.format("Result [fingerprint similarity] -- %s", result));
+
+        /*
+        * JAVE LIB (for converting files)
+        * https://www.sauronsoftware.it/projects/jave/manual.php#1
+        *
+        * JAVA WAV FILE IO
+        * http://www.labbookpages.co.uk/audio/javaWavFiles.html#reading
+        *
+        * MUSICG
+        * https://code.google.com/archive/p/musicg/
+        * https://sites.google.com/site/musicgapi/technical-documents/wav-file-format
+        * https://github.com/madyx/musicg
+        * https://github.com/loisaidasam/musicg
+        *
+        * HTK
+        * https://htk.eng.cam.ac.uk/
+        *
+        * ALGORITHM
+        * https://www.ee.columbia.edu/~dpwe/papers/Wang03-shazam.pdf
+        *
+        * */
     }
 }
