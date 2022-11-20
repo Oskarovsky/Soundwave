@@ -11,8 +11,8 @@ public class TestApp {
 
     public static void main(String[] args) {
 
-        String firstPath = "/home/oskarro/Music/WESTBAM.wav";
-        String secondPath = "/home/oskarro/Music/YOMANDA.wav";
+        String firstPath = "/Users/oskarro/Downloads/WESTBAM.wav";
+        String secondPath = "/Users/oskarro/Downloads/YOMANDA.wav";
 
         Wave wave1 = new Wave(firstPath);
         Wave wave2 = new Wave(secondPath);

@@ -25,11 +25,11 @@ import java.util.List;
  */
 public class FingerprintManager {
 
-    private FingerprintProperties fingerprintProperties= FingerprintProperties.getInstance();
-    private int sampleSizePerFrame=fingerprintProperties.getSampleSizePerFrame();
-    private int overlapFactor=fingerprintProperties.getOverlapFactor();
-    private int numRobustPointsPerFrame=fingerprintProperties.getNumRobustPointsPerFrame();
-    private int numFilterBanks=fingerprintProperties.getNumFilterBanks();
+    private final FingerprintProperties fingerprintProperties= FingerprintProperties.getInstance();
+    private final int sampleSizePerFrame=fingerprintProperties.getSampleSizePerFrame();
+    private final int overlapFactor=fingerprintProperties.getOverlapFactor();
+    private final int numRobustPointsPerFrame=fingerprintProperties.getNumRobustPointsPerFrame();
+    private final int numFilterBanks=fingerprintProperties.getNumFilterBanks();
 
     /**
      * Constructor
@@ -47,7 +47,7 @@ public class FingerprintManager {
     public byte[] extractFingerprint(Wave wave){
 
         int[][] coordinates;	// coordinates[x][0..3]=y0..y3
-        byte[] fingerprint=new byte[0];
+        byte[] fingerPrint;
 
         // resample to target rate
         Resampler resampler=new Resampler();
@@ -66,9 +66,9 @@ public class FingerprintManager {
 
         // get spectrogram's data
         Spectrogram spectrogram=resampledWave.getSpectrogram(sampleSizePerFrame, overlapFactor);
-        double[][] spectorgramData=spectrogram.getNormalizedSpectrogramData();
+        double[][] spectogramData=spectrogram.getNormalizedSpectrogramData();
 
-        List<Integer>[] pointsLists=getRobustPointList(spectorgramData);
+        List<Integer>[] pointsLists=getRobustPointList(spectogramData);
         int numFrames=pointsLists.length;
 
         // prepare fingerprint bytes
@@ -96,9 +96,8 @@ public class FingerprintManager {
             for (int j=0; j<numRobustPointsPerFrame; j++){
                 if (coordinates[i][j]!=-1){
                     // first 2 bytes is x
-                    int x=i;
-                    byteList.add((byte)(x>>8));
-                    byteList.add((byte)x);
+                    byteList.add((byte)(i >>8));
+                    byteList.add((byte) i);
 
                     // next 2 bytes is y
                     int y=coordinates[i][j];
@@ -106,7 +105,7 @@ public class FingerprintManager {
                     byteList.add((byte)y);
 
                     // next 4 bytes is intensity
-                    int intensity=(int)(spectorgramData[x][y]*Integer.MAX_VALUE);	// spectorgramData is ranged from 0~1
+                    int intensity=(int)(spectogramData[i][y]*Integer.MAX_VALUE);	// spectorgramData is ranged from 0~1
                     byteList.add((byte)(intensity>>24));
                     byteList.add((byte)(intensity>>16));
                     byteList.add((byte)(intensity>>8));
@@ -116,14 +115,14 @@ public class FingerprintManager {
         }
         // end for each valid coordinate, append with its intensity
 
-        fingerprint=new byte[byteList.size()];
+        fingerPrint=new byte[byteList.size()];
         Iterator<Byte> byteListIterator=byteList.iterator();
         int pointer=0;
         while(byteListIterator.hasNext()){
-            fingerprint[pointer++]=byteListIterator.next();
+            fingerPrint[pointer++]=byteListIterator.next();
         }
 
-        return fingerprint;
+        return fingerPrint;
     }
 
     /**
@@ -138,8 +137,6 @@ public class FingerprintManager {
             InputStream fis=new FileInputStream(fingerprintFile);
             fingerprint=getFingerprintFromInputStream(fis);
             fis.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -149,7 +146,7 @@ public class FingerprintManager {
     /**
      * Get bytes from fingerprint inputstream
      *
-     * @param fingerprintFile	fingerprint inputstream
+//     * @param fingerPrintFile	fingerprint inputstream
      * @return fingerprint in bytes
      */
     public byte[] getFingerprintFromInputStream(InputStream inputStream){
@@ -168,7 +165,7 @@ public class FingerprintManager {
      *
      * @param fingerprint	fingerprint bytes
      * @param filename		fingerprint filename
-     * @see	fingerprint file saved
+//     * @see	fingerPrint file saved
      */
     public void saveFingerprintAsFile(byte[] fingerprint, String filename){
 
@@ -177,10 +174,8 @@ public class FingerprintManager {
             fileOutputStream = new FileOutputStream(filename);
             fileOutputStream.write(fingerprint);
             fileOutputStream.close();
-        } catch (FileNotFoundException e1) {
+        } catch (IOException e1) {
             e1.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -198,9 +193,7 @@ public class FingerprintManager {
             double[][] bankIntensities=new double[numX][bandwidthPerBank];
 
             for (int i=0; i<numX; i++){
-                for (int j=0; j<bandwidthPerBank; j++){
-                    bankIntensities[i][j]=spectrogramData[i][j+b*bandwidthPerBank];
-                }
+                System.arraycopy(spectrogramData[i], b * bandwidthPerBank, bankIntensities[i], 0, bandwidthPerBank);
             }
 
             // get the most robust point in each filter bank
@@ -208,9 +201,7 @@ public class FingerprintManager {
             double[][] processedIntensities=processorChain.getIntensities();
 
             for (int i=0; i<numX; i++){
-                for (int j=0; j<bandwidthPerBank; j++){
-                    allBanksIntensities[i][j+b*bandwidthPerBank]=processedIntensities[i][j];
-                }
+                System.arraycopy(processedIntensities[i], 0, allBanksIntensities[i], b * bandwidthPerBank, bandwidthPerBank);
             }
         }
 
@@ -235,9 +226,7 @@ public class FingerprintManager {
         }
 
         // robustLists[x]=y1,y2,y3,...
-        Iterator<int[]> robustPointListIterator=robustPointList.iterator();
-        while (robustPointListIterator.hasNext()){
-            int[] coor=robustPointListIterator.next();
+        for (int[] coor : robustPointList) {
             robustLists[coor[0]].add(coor[1]);
         }
 
@@ -262,7 +251,6 @@ public class FingerprintManager {
         }
 
         // get the last x-coordinate (length-8&length-7)bytes from fingerprint
-        int numFrames=((int)(fingerprint[fingerprint.length-8]&0xff)<<8 | (int)(fingerprint[fingerprint.length-7]&0xff))+1;
-        return numFrames;
+        return ((fingerprint[fingerprint.length-8]&0xff) <<8 | (int)(fingerprint[fingerprint.length-7]&0xff))+1;
     }
 }

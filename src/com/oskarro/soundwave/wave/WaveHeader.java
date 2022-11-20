@@ -67,7 +67,7 @@ public class WaveHeader implements Serializable, Cloneable {
             chunkSize = (long) (headerBuffer[pointer++] & 0xff)
                     | (long) (headerBuffer[pointer++] & 0xff) << 8
                     | (long) (headerBuffer[pointer++] & 0xff) << 16
-                    | (long) (headerBuffer[pointer++] & 0xff << 24);
+                    | (long) (headerBuffer[pointer++] & 0xffL << 24);
             format = new String(new byte[] { headerBuffer[pointer++],
                     headerBuffer[pointer++], headerBuffer[pointer++],
                     headerBuffer[pointer++] });
@@ -78,8 +78,8 @@ public class WaveHeader implements Serializable, Cloneable {
                     | (long) (headerBuffer[pointer++] & 0xff) << 8
                     | (long) (headerBuffer[pointer++] & 0xff) << 16
                     | (long) (headerBuffer[pointer++] & 0xff) << 24;
-            audioFormat = (int) ((headerBuffer[pointer++] & 0xff) | (headerBuffer[pointer++] & 0xff) << 8);
-            channels = (int) ((headerBuffer[pointer++] & 0xff) | (headerBuffer[pointer++] & 0xff) << 8);
+            audioFormat = (headerBuffer[pointer++] & 0xff) | (headerBuffer[pointer++] & 0xff) << 8;
+            channels = (headerBuffer[pointer++] & 0xff) | (headerBuffer[pointer++] & 0xff) << 8;
             sampleRate = (long) (headerBuffer[pointer++] & 0xff)
                     | (long) (headerBuffer[pointer++] & 0xff) << 8
                     | (long) (headerBuffer[pointer++] & 0xff) << 16
@@ -88,8 +88,8 @@ public class WaveHeader implements Serializable, Cloneable {
                     | (long) (headerBuffer[pointer++] & 0xff) << 8
                     | (long) (headerBuffer[pointer++] & 0xff) << 16
                     | (long) (headerBuffer[pointer++] & 0xff) << 24;
-            blockAlign = (int) ((headerBuffer[pointer++] & 0xff) | (headerBuffer[pointer++] & 0xff) << 8);
-            bitsPerSample = (int) ((headerBuffer[pointer++] & 0xff) | (headerBuffer[pointer++] & 0xff) << 8);
+            blockAlign = (headerBuffer[pointer++] & 0xff) | (headerBuffer[pointer++] & 0xff) << 8;
+            bitsPerSample = (headerBuffer[pointer++] & 0xff) | (headerBuffer[pointer++] & 0xff) << 8;
             subChunk2Id = new String(new byte[] { headerBuffer[pointer++],
                     headerBuffer[pointer++], headerBuffer[pointer++],
                     headerBuffer[pointer++] });
@@ -114,7 +114,7 @@ public class WaveHeader implements Serializable, Cloneable {
         }
 
         // check the format is support
-        if (chunkId.toUpperCase().equals(RIFF_HEADER) && format.toUpperCase().equals(WAVE_HEADER) && audioFormat == 1) {
+        if (chunkId.equalsIgnoreCase(RIFF_HEADER) && format.equalsIgnoreCase(WAVE_HEADER) && audioFormat == 1) {
             return true;
         } else {
             System.err.println("WaveHeader: Unsupported header format");
@@ -263,32 +263,30 @@ public class WaveHeader implements Serializable, Cloneable {
 
     public String toString() {
 
-        StringBuffer sb = new StringBuffer();
-        sb.append("chunkId: ").append(chunkId);
-        sb.append("\n");
-        sb.append("chunkSize: ").append(chunkSize);
-        sb.append("\n");
-        sb.append("format: ").append(format);
-        sb.append("\n");
-        sb.append("subChunk1Id: ").append(subChunk1Id);
-        sb.append("\n");
-        sb.append("subChunk1Size: ").append(subChunk1Size);
-        sb.append("\n");
-        sb.append("audioFormat: ").append(audioFormat);
-        sb.append("\n");
-        sb.append("channels: ").append(channels);
-        sb.append("\n");
-        sb.append("sampleRate: ").append(sampleRate);
-        sb.append("\n");
-        sb.append("byteRate: ").append(byteRate);
-        sb.append("\n");
-        sb.append("blockAlign: ").append(blockAlign);
-        sb.append("\n");
-        sb.append("bitsPerSample: ").append(bitsPerSample);
-        sb.append("\n");
-        sb.append("subChunk2Id: ").append(subChunk2Id);
-        sb.append("\n");
-        sb.append("subChunk2Size: ").append(subChunk2Size);
-        return sb.toString();
+        return "chunkId: " + chunkId +
+                "\n" +
+                "chunkSize: " + chunkSize +
+                "\n" +
+                "format: " + format +
+                "\n" +
+                "subChunk1Id: " + subChunk1Id +
+                "\n" +
+                "subChunk1Size: " + subChunk1Size +
+                "\n" +
+                "audioFormat: " + audioFormat +
+                "\n" +
+                "channels: " + channels +
+                "\n" +
+                "sampleRate: " + sampleRate +
+                "\n" +
+                "byteRate: " + byteRate +
+                "\n" +
+                "blockAlign: " + blockAlign +
+                "\n" +
+                "bitsPerSample: " + bitsPerSample +
+                "\n" +
+                "subChunk2Id: " + subChunk2Id +
+                "\n" +
+                "subChunk2Size: " + subChunk2Size;
     }
 }

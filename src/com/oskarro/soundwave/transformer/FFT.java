@@ -11,7 +11,7 @@ public final class FFT {
     private final double[] w;
     private final int fftFrameSize;
     private final int sign;
-    private final int[] bitm_array;
+    private final int[] bitM_array;
     private final int fftFrameSize2;
 
     // Sign = -1 is FFT, 1 is IFFT (inverse FFT)
@@ -26,7 +26,7 @@ public final class FFT {
         fftFrameSize2 = fftFrameSize << 1;
 
         // Pre-process Bit-Reversal
-        bitm_array = new int[fftFrameSize2];
+        bitM_array = new int[fftFrameSize2];
         for (int i = 2; i < fftFrameSize2; i += 2) {
             int j;
             int bitm;
@@ -35,7 +35,7 @@ public final class FFT {
                     j++;
                 j <<= 1;
             }
-            bitm_array[i] = j;
+            bitM_array[i] = j;
         }
 
     }
@@ -52,18 +52,18 @@ public final class FFT {
         double[] warray = new double[(fftFrameSize - 1) * 4];
         int w_index = 0;
 
-        for (int i = 0,  nstep = 2; i < imax; i++) {
-            int jmax = nstep;
-            nstep <<= 1;
+        for (int i = 0,  nStep = 2; i < imax; i++) {
+            int jMax = nStep;
+            nStep <<= 1;
 
             double wr = 1.0;
             double wi = 0.0;
 
-            double arg = Math.PI / (jmax >> 1);
+            double arg = Math.PI / (jMax >> 1);
             double wfr = Math.cos(arg);
             double wfi = sign * Math.sin(arg);
 
-            for (int j = 0; j < jmax; j += 2) {
+            for (int j = 0; j < jMax; j += 2) {
                 warray[w_index++] = wr;
                 warray[w_index++] = wi;
 
@@ -78,12 +78,12 @@ public final class FFT {
         {
             w_index = 0;
             int w_index2 = warray.length >> 1;
-            for (int i = 0,  nstep = 2; i < (imax - 1); i++) {
-                int jmax = nstep;
-                nstep *= 2;
+            for (int i = 0,  nStep = 2; i < (imax - 1); i++) {
+                int jMax = nStep;
+                nStep *= 2;
 
-                int ii = w_index + jmax;
-                for (int j = 0; j < jmax; j += 2) {
+                int ii = w_index + jMax;
+                for (int j = 0; j < jMax; j += 2) {
                     double wr = warray[w_index++];
                     double wi = warray[w_index++];
                     double wr1 = warray[ii++];
@@ -102,24 +102,23 @@ public final class FFT {
 
         final int fftFrameSize2 = fftFrameSize << 1;
 
-        int nstep = 2;
+        int nStep = 2;
 
-        if (nstep >= fftFrameSize2)
+        if (nStep >= fftFrameSize2)
             return;
-        int i = nstep - 2;
+        int i = 0;
         if (sign == -1)
-            calcF4F(fftFrameSize, data, i, nstep, w);
+            calcF4F(fftFrameSize, data, i, nStep, w);
         else
-            calcF4I(fftFrameSize, data, i, nstep, w);
+            calcF4I(fftFrameSize, data, i, nStep, w);
 
     }
 
-    private static void calcF2E(int fftFrameSize, double[] data, int i, int nstep, double[] w) {
-        int jmax = nstep;
-        for (int n = 0; n < jmax; n += 2) {
+    private static void calcF2E(int fftFrameSize, double[] data, int i, int nStep, double[] w) {
+        for (int n = 0; n < nStep; n += 2) {
             double wr = w[i++];
             double wi = w[i++];
-            int m = n + jmax;
+            int m = n + nStep;
             double datam_r = data[m];
             double datam_i = data[m + 1];
             double datan_r = data[n];
@@ -644,7 +643,7 @@ public final class FFT {
 
         int inverse = fftFrameSize2 - 2;
         for (int i = 0; i < fftFrameSize; i += 4) {
-            int j = bitm_array[i];
+            int j = bitM_array[i];
 
             // Performing Bit-Reversal, even v.s. even, O(2N)
             if (i < j) {
